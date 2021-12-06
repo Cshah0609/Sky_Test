@@ -1,4 +1,4 @@
-package com.rxcorp.odl.au9.test
+package test
 
 import org.apache.spark.sql.SparkSession
 
