@@ -1,4 +1,4 @@
-package test
+package com.rxcorp.odl.au9.test
 
 import org.apache.spark.sql.SparkSession
 
@@ -18,9 +18,40 @@ object test {
   def executeQaChecks( qaCheckSql : List[String], env :String, date : String,sparkSession : SparkSession) = {
 
     val a = qaCheckSql
+    val env_val =env
+    val date_val = date
     for(i <- 0 until a.length ){
       sparkSession.sql( ${a(i)})
-       }
+
+    }
+    
+    //Below are the queries getting executed :
+    sparkSession.sql (s"""Select count( *) from (
+      select channel_code, count(*) from channel_table_${env_val}
+       group by channel_code
+      having count*) > 1)""".stripMargin)
+
+    sparkSession.sql(
+      s"""
+         |select count (*)
+         |from
+         |channel_transaction_${env_val} A,
+         |channel_table_${env_val} B
+         |left join on (A.channel_code= B.channel_code)
+         |where B.channel_code is null
+         |and B.transaction_date =${date_val}
+         |""".stripMargin)
+
+    sparkSession.sql(
+      s"""
+         |select count (*) from
+         |channel_transaction_${env_val}
+         |where transaction_date = ${date_val}
+         |and transaction_amount
+         |is null
+         |""".stripMargin)
+
+
 
   }
 
